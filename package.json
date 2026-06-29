@@ -10,7 +10,7 @@
     "postinstall": "prisma generate"
   },
   "engines": {
-    "node": "24.x"
+    "node": "17.9.1"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.19",

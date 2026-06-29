@@ -52,7 +52,18 @@ const AuthForm = () => {
 
     if (variant === "REGISTER") {
       axios.post("/api/register", data)
-        .then(() => signIn('credentials', data))
+        .then(() => signIn('credentials', {
+          ...data,
+          redirect: false
+        }))
+        .then((callback) => {
+          if (callback?.ok) {
+            router.push('/users')
+          }
+          if (callback?.error) {
+            toast.error('Something went wrong')
+          }
+        })
         .catch(() => toast.error('Something went wrong :(...'))
         .finally(() => setIsLoading(false))
     }

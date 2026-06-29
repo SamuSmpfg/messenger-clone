@@ -1,25 +1,22 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef } from "react"
 import useActiveList from "./useActiveList"
 import { Channel, Members } from "pusher-js"
 import pusherClient from "../libs/pusherClient"
 
 const useActiveChannel = () => {
   const { set, add, remove } = useActiveList()
-  const [activeChannel, setActiveChannel] = useState<Channel | null>(null)
+  const channelRef = useRef<Channel | null>(null)
 
   useEffect(() => {
-    let channel = activeChannel
+    if (channelRef.current) return
 
-    if (!channel) {
-      channel = pusherClient.subscribe('presence-messenger')
-      setActiveChannel(channel)
-    }
+    const channel = pusherClient.subscribe('presence-messenger')
+    channelRef.current = channel
 
     channel.bind('pusher:subscription_succeeded', (members: Members) => {
       const initialMembers: string[] = []
-
       members.each((member: Record<string, any>) => initialMembers.push(member.id))
       set(initialMembers)
     })
@@ -33,13 +30,11 @@ const useActiveChannel = () => {
     })
 
     return () => {
-      if (activeChannel) {
-        pusherClient.unsubscribe('presence-messenger')
-        setActiveChannel(null)
-      }
+      pusherClient.unsubscribe('presence-messenger')
+      channelRef.current = null
     }
+  }, [])
 
-  }, [activeChannel, set, add, remove])
 }
 
 export default useActiveChannel
